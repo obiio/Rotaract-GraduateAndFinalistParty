@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | Rock N Roll</title>
+  <style>
+    body{background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',sans-serif;}
+    .card{max-width:400px;width:100%;background:rgba(255,255,255,0.1);padding:3rem;border-radius:20px;backdrop-filter:blur(15px);text-align:center;}
+    input{width:100%;padding:1rem;margin:1rem 0;border:none;border-radius:10px;background:rgba(255,255,255,0.2);color:#fff;}
+    .btn{padding:1rem 2rem;background:#ff0066;border:none;color:#fff;border-radius:50px;cursor:pointer;margin-top:1rem;}
+    .switch{margin-top:2rem;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Rock N Roll</h1>
+    <p id="modeText">Login to Register</p>
+    <input type="email" id="email" placeholder="Email" required/>
+    <input type="password" id="password" placeholder="Password" required/>
+    <button class="btn" id="authBtn">Login</button>
+    <p class="switch">New here? <a href="#" id="switchLink" style="color:#ffd700;">Create Account</a></p>
+    <p><a href="index.html" style="color:#888;">Back to Home</a></p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script>
+    let isLogin = true;
+    document.getElementById('switchLink').onclick = () => {
+      isLogin = !isLogin;
+      document.getElementById('modeText').textContent = isLogin ? "Login to Register" : "Create Account";
+      document.getElementById('authBtn').textContent = isLogin ? "Login" : "Sign Up";
+      document.getElementById('switchLink').textContent = isLogin ? "Create Account" : "Login Instead";
+    };
+    document.getElementById('authBtn').onclick = () => {
+      const email = document.getElementById('email').value;
+      const pass = document.getElementById('password').value;
+      if(isLogin){
+        firebase.auth().signInWithEmailAndPassword(email, pass).then(() => location.href='index.html').catch(e=>alert(e.message));
+      } else {
+        firebase.auth().createUserWithEmailAndPassword(email, pass).then(() => location.href='index.html').catch(e=>alert(e.message));
+      }
+    };
+  </script>
+</body>
+</html>

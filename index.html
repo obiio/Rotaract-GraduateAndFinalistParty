@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rock N Roll Party 2025</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root { --primary: #ff0066; --gold: #ffd700; --dark: #0f0f0f; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+    body { background:#000; color:#fff; overflow-x:hidden; }
+    .hero { min-height:100vh; background:linear-gradient(rgba(0,0,0,0.8),rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&auto=format&fit=crop&q=80') center/cover fixed; display:flex; align-items:center; justify-content:center; text-align:center; padding:2rem; }
+    .container { max-width:1200px; margin:auto; z-index:2; }
+    h1 { font-size:6rem; background:linear-gradient(45deg,#ff0066,#ffd700); -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:fadeIn 2s; }
+    .slots { font-size:3rem; color:var(--gold); margin:2rem 0; font-weight:bold; }
+    .countdown { font-size:2.8rem; color:var(--gold); animation:pulse 2s infinite; margin:1.5rem 0; }
+    .btn { padding:1.2rem 3rem; background:var(--primary); border:none; color:#fff; font-size:1.3rem; border-radius:50px; cursor:pointer; transition:0.4s; box-shadow:0 15px 40px rgba(255,0,102,0.5); margin-top:2rem; }
+    .btn:hover { transform:translateY(-12px) scale(1.05); box-shadow:0 25px 60px rgba(255,0,102,0.7); }
+    .btn:disabled { background:#555; cursor:not-allowed; transform:none; }
+    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); backdrop-filter:blur(10px); z-index:999; align-items:center; justify-content:center; padding:1rem; }
+    .modal.active { display:flex; animation:fadeIn 0.5s; }
+    .modal-content { background:rgba(255,255,255,0.08); padding:3rem; border-radius:25px; max-width:500px; width:100%; border:1px solid rgba(255,0,102,0.3); animation:slideUp 0.6s ease-out; }
+    input, select { width:100%; padding:1rem; margin:1rem 0; border:none; border-radius:12px; background:rgba(255,255,255,0.1); color:#fff; font-size:1rem; }
+    input::placeholder { color:#aaa; }
+    .spinner { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center; flex-direction:column; color:var(--gold); }
+    .spinner.active { display:flex; }
+    .spin { width:80px; height:80px; border:8px solid #333; border-top:8px solid var(--primary); border-radius:50%; animation:spin 1s linear infinite; margin-bottom:2rem; }
+    footer { text-align:center; padding:3rem; background:#111; font-size:0.9rem; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    @keyframes slideUp { from{transform:translateY(100px); opacity:0;} to{transform:translateY(0); opacity:1;} }
+    @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+    @media(max-width:768px){ h1{font-size:3.5rem;} .slots{font-size:2rem;} .countdown{font-size:2rem;} }
+  </style>
+</head>
+<body>
+  <div class="spinner" id="loader"><div class="spin"></div><h2>Loading...</h2></div>
+
+  <section class="hero">
+    <div class="container">
+      <h1>ROCK N ROLL</h1>
+      <p style="font-size:1.5rem; margin:1rem 0;">Graduates & Finalists Party • 12th Dec 2025 • 10PM</p>
+      <p class="slots" id="slotsLeft">Loading slots...</p>
+      <div class="countdown" id="timer">Calculating...</div>
+      <button class="btn" id="regBtn">SECURE YOUR SPOT NOW</button>
+    </div>
+  </section>
+
+  <div class="modal" id="regModal">
+    <div class="modal-content">
+      <h2 style="text-align:center; margin-bottom:1.5rem; color:var(--gold);">Complete Registration</h2>
+      <form id="regForm">
+        <select id="category" required><option value="">Select Category</option><option value="graduate">Graduate - ₦8,000</option><option value="finalist">Finalist - ₦5,000</option></select>
+        <input type="text" placeholder="Full Name" id="name" required/>
+        <input type="text" placeholder="Club Name (Compulsory)" id="club" required/>
+        <input type="tel" placeholder="Phone Number (WhatsApp)" id="phone" required/>
+        <input type="email" placeholder="Email Address" id="email" required/>
+        <div style="text-align:center; margin-top:2rem;">
+          <button type="submit" class="btn">Proceed to Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer>© 2025 Rotaract Club of Imo State University | Drink Responsibly • 18+</footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script>
+  const loader = document.getElementById('loader');
+  const regModal = document.getElementById('regModal');
+  const regBtn = document.getElementById('regBtn');
+  window.onload = () => setTimeout(() => loader.classList.remove('active'), 1500);
+
+  // Real-time slots
+  firebase.firestore().collection('party').doc('slots').onSnapshot(doc => {
+    const left = 20 - (doc.data()?.registered || 0);
+    document.getElementById('slotsLeft').innerHTML = left > 0 ? `${left} SLOTS LEFT!` : `SOLD OUT!`;
+    regBtn.disabled = left <= 0; 
+    regBtn.textContent = left <= 0 ? "SOLD OUT" : "SECURE YOUR SPOT NOW";
+  });
+
+  // Countdown
+  const partyDate = new Date('2025-12-12T22:00:00');
+  setInterval(() => {
+    const diff = partyDate - new Date();
+    if (diff < 0) { document.getElementById('timer').textContent = "LIVE NOW!"; return; }
+    const d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000), m = Math.floor((diff % 3600000) / 60000);
+    document.getElementById('timer').innerHTML = `${d}d ${h}h ${m}m`;
+  }, 60000);
+
+  // Smart authentication flow
+  firebase.auth().onAuthStateChanged(async user => {
+    if (!user) { regBtn.onclick = () => location.href = 'login.html'; return; }
+    const snap = await firebase.firestore().collection('registrations').where('uid', '==', user.uid).get();
+    if (!snap.empty) { location.href = 'status.html'; }
+    else { regBtn.onclick = () => regModal.classList.add('active'); }
+  });
+
+  regModal.addEventListener('click', e => { if (e.target === regModal) regModal.classList.remove('active'); });
+
+  // SUBMIT FORM → Generate RACRNRxxxx
+  document.getElementById('regForm').addEventListener('submit', async e => {
+    e.preventDefault(); 
+    loader.classList.add('active');
+    const user = firebase.auth().currentUser;
+
+    // Prevent double registration
+    const existing = await firebase.firestore().collection('registrations').where('uid', '==', user.uid).get();
+    if (!existing.empty) { alert("You have already registered!"); location.href = 'status.html'; return; }
+
+    // Get current approved count for serial number
+    const slotsDoc = await firebase.firestore().collection('party').doc('slots').get();
+    const currentCount = slotsDoc.data()?.registered || 0;
+    const serial = String(currentCount + 1).padStart(4, '0'); // 0001, 0002, etc.
+    const regNumber = `RACRNR${serial}`;
+
+    const data = {
+      uid: user.uid,
+      name: e.target.name.value.trim(),
+      club: e.target.club.value.trim(),
+      phone: e.target.phone.value,
+      email: e.target.email.value,
+      category: e.target.category.value,
+      amount: e.target.category.value === 'graduate' ? 8000 : 5000,
+      status: 'pending',
+      regNumber: regNumber,  // ← NEW FORMAT
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const docRef = await firebase.firestore().collection('registrations').add(data);
+    sessionStorage.setItem('userRegId', docRef.id);
+    sessionStorage.setItem('regData', JSON.stringify(data));
+    setTimeout(() => location.href = 'payment.html', 1200);
+  });
+</script>
+</body>
+</html>

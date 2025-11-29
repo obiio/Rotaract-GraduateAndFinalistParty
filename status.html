@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My VIP Pass | Rock N Roll 2025</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    :root {
+      --primary: #ff0066;
+      --gold: #ffd700;
+      --dark: #0a0a0a;
+      --glow: 0 0 30px rgba(255, 102, 102, 0.6);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: radial-gradient(circle at top, #1a0033, #000);
+      color:#fff;
+      min-height:100vh;
+      font-family: 'Montserrat', 'Segoe UI', sans-serif;
+      padding:1rem;
+      overflow-x:hidden;
+    }
+    .container { max-width:900px; margin:auto; position:relative; }
+
+    .logout {
+      position:absolute; top:15px; right:15px; background:transparent; border:1px solid #444; color:#aaa;
+      padding:0.6rem 1.2rem; border-radius:50px; cursor:pointer; font-size:0.9rem; transition:0.3s;
+    }
+    .logout:hover { background:#ff0066; color:#fff; border-color:#ff0066; }
+
+    .header {
+      text-align:center; margin:2rem 0 3rem;
+      font-size:3.8rem; font-weight:900;
+      background: linear-gradient(90deg, #ff0066, #ffd700, #ff0066);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      text-shadow: 0 0 40px rgba(255,102,102,0.5);
+      animation: glow 4s infinite alternate;
+    }
+
+    .status-card {
+      background: linear-gradient(135deg, rgba(255,0,102,0.15), rgba(255,215,0,0.1));
+      border: 2px solid transparent;
+      border-radius: 25px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--glow);
+    }
+    .status-card::before {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(45deg, transparent, rgba(255,215,0,0.1), transparent);
+      animation: shimmer 6s infinite;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 1rem 3rem;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      margin: 1rem 0;
+    }
+    .pending { background:#ff9500; color:#000; }
+    .approved { background:#00ff9d; color:#000; animation: pulse 3s infinite; box-shadow: 0 0 30px rgba(0,255,157,0.6); }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    .detail {
+      background: rgba(255,255,255,0.05);
+      padding: 1.5rem;
+      border-radius: 18px;
+      text-align: center;
+      border: 1px solid rgba(255,215,0,0.2);
+    }
+    .label { font-size:0.9rem; color:#aaa; margin-bottom:0.5rem; }
+    .value { font-size:1.5rem; font-weight:bold; color:#ffd700; }
+
+    /* VIP TICKET — FINAL VERSION */
+    .ticket {
+      display: none;
+      background: linear-gradient(135deg, #111, #000);
+      border: 4px solid #ffd700;
+      border-radius: 30px;
+      padding: 3rem 2rem;
+      margin: 3rem auto;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(255,215,0,0.4), inset 0 0 40px rgba(255,215,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .ticket::before {
+      content: 'VIP PASS';
+      position: absolute;
+      top: 15px; right: -40px;
+      background: #ff0066;
+      color: #fff;
+      padding: 8px 50px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      transform: rotate(45deg);
+      box-shadow: 0 0 20px rgba(255,0,102,0.7);
+    }
+
+    .ticket-title {
+      font-size: 3rem;
+      background: linear-gradient(45deg, #ffd700, #ff0066);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      font-weight: 900;
+    }
+
+    #qrcode {
+      margin: 2rem auto;
+      padding: 15px;
+      background: #fff;
+      border-radius: 20px;
+      width: fit-content;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .ticket-info {
+      margin: 2rem 0;
+      line-height: 2.4;
+      font-size: 1.4rem;
+    }
+    .highlight { color:#ffd700; font-weight:bold; }
+
+    .access {
+      background: linear-gradient(90deg, #00ff9d, #00cc7a);
+      color: #000;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 1.6rem;
+      margin: 1.5rem 0;
+      display: inline-block;
+      box-shadow: 0 0 30px rgba(0,255,157,0.5);
+    }
+
+    .entrance-note {
+      background: rgba(255,0,102,0.2);
+      border: 2px dashed #ff0066;
+      padding: 1.5rem;
+      border-radius: 15px;
+      margin: 2rem 0;
+      font-weight: bold;
+      color: #ff0066;
+      font-size: 1.1rem;
+    }
+
+    .event-footer {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 2px dashed #555;
+      color: #aaa;
+      font-size: 1rem;
+    }
+
+    @keyframes glow { from { text-shadow: 0 0 20px #ff0066; } to { text-shadow: 0 0 40px #ffd700; } }
+    @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
+    @keyframes shimmer { 0% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
+
+    /* BLOCK PRINTING */
+    @media print { body { display:none; } }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <button class="logout" onclick="firebase.auth().signOut().then(()=>location.href='index.html')">
+      Logout
+    </button>
+
+    <h1 class="header">ROCK N ROLL 2025</h1>
+
+    <!-- Status Card -->
+    <div class="status-card">
+      <div class="status-badge pending" id="statusBadge">Verifying Payment...</div>
+      <div class="details-grid">
+        <div class="detail"><div class="label">Registration Number</div><div class="value" id="regNo">-</div></div>
+        <div class="detail"><div class="label">Name</div><div class="value" id="name">-</div></div>
+        <div class="detail"><div class="label">Club</div><div class="value" id="club">-</div></div>
+        <div class="detail"><div class="label">Category</div><div class="value" id="cat">-</div></div>
+      </div>
+    </div>
+
+    <!-- FINAL VIP DIGITAL TICKET -->
+    <div class="ticket" id="vipTicket">
+      <h2 class="ticket-title">VIP PASS</h2>
+      <div id="qrcode"></div>
+
+      <div class="ticket-info">
+        <p><span class="highlight" id="tName">Name</span></p>
+        <p>Club: <span class="highlight" id="tClub">Club</span></p>
+        <p>Reg ID: <span class="highlight" id="tReg">RACRNR0000</span></p>
+      </div>
+
+      <div class="access" id="accessLevel">GRADUATE</div>
+
+      <div class="entrance-note">
+        THIS TICKET MUST BE SHOWN AT THE ENTRANCE<br>
+        <small>Digital display or screenshot accepted • No entry without ticket</small>
+      </div>
+
+      <div class="event-footer">
+        12 DECEMBER 2025 • 10:00 PM • UNDISCLOSED LOCATION<br>
+        Powered by Rotaract IMSU • 18+ • Drink Responsibly
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script>
+    firebase.auth().onAuthStateChanged(async user => {
+      if (!user) { location.href = 'login.html'; return; }
+      const regId = sessionStorage.getItem('userRegId');
+      if (!regId) { location.href = 'index.html'; return; }
+
+      const docRef = firebase.firestore().collection('registrations').doc(regId);
+
+      const update = (data) => {
+        document.getElementById('regNo').textContent = data.regNumber;
+        document.getElementById('name').textContent = data.name;
+        document.getElementById('club').textContent = data.club;
+        document.getElementById('cat').textContent = data.category.toUpperCase();
+
+        const badge = document.getElementById('statusBadge');
+        if (data.status === 'approved') {
+          badge.textContent = "APPROVED";
+          badge.className = "status-badge approved";
+          document.getElementById('vipTicket').style.display = "block";
+
+          document.getElementById('tName').textContent = data.name;
+          document.getElementById('tClub').textContent = data.club;
+          document.getElementById('tReg').textContent = data.regNumber;
+
+          // Show only GRADUATE or FINALIST
+          const accessText = data.category === 'graduate' ? 'GRADUATE' : 'FINALIST';
+          document.getElementById('accessLevel').textContent = accessText;
+
+          new QRCode(document.getElementById("qrcode"), {
+            text: data.regNumber,
+            width: 240,
+            height: 240,
+            colorDark: "#000",
+            colorLight: "#fff"
+          });
+        } else {
+          badge.textContent = "Payment Pending Approval";
+          badge.className = "status-badge pending";
+        }
+      };
+
+      docRef.onSnapshot(doc => { if (doc.exists) update(doc.data()); });
+    });
+  </script>
+</body>
+</html>

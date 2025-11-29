@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment | Rock N Roll</title>
+  <style>
+    :root { --primary: #ff0066; --gold: #ffd700; }
+    body { background:#000; color:#fff; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; font-family:'Segoe UI',sans-serif; }
+    .card { background:linear-gradient(135deg, #1a0033, #330011); padding:3rem; border-radius:25px; max-width:500px; width:100%; box-shadow:0 20px 60px rgba(255,0,102,0.4); border:2px solid var(--primary); }
+    .notice { background:linear-gradient(90deg, #ff9900, #ff6600); color:#000; padding:1rem; border-radius:10px; margin:2rem 0; font-weight:bold; }
+    .amount { font-size:3rem; color:var(--gold); margin:1.5rem 0; }
+    .acc { margin:2rem 0; background:#111; padding:1.5rem; border-radius:15px; border-left:4px solid var(--primary); }
+    .btn { padding:1.2rem 3rem; background:#000; color:var(--primary); border:2px solid var(--primary); border-radius:50px; cursor:pointer; margin-top:2rem; }
+    .pending { display:none; padding:3rem; background:#111; border-radius:20px; margin-top:2rem; }
+  </style>
+</head>
+<body>
+  <div class="card" id="paymentCard">
+    <h1>Complete Payment</h1>
+    <div class="amount" id="amount">₦0</div>
+    <div class="notice">
+      <strong>IMPORTANT:</strong><br>
+      Use <u>EXACTLY the same name</u> you registered with when making transfer.<br>
+      Example: "Chukwudi Emmanuel" → transfer as "Chukwudi Emmanuel"
+    </div>
+    <p>Pay to:</p>
+    <div class="acc">
+      <p><strong>Bank:</strong> GTBank</p>
+      <p><strong>Account Name:</strong> Rotaract IMSU</p>
+      <p><strong>Account No:</strong> 08123456789</p>
+    </div>
+    <button class="btn" id="paidBtn">I Have Paid</button>
+    <p style="margin-top:2rem;"><a href="index.html" style="color:#888;">Back</a></p>
+  </div>
+
+  <div class="pending" id="pending">
+    <h2>Payment Recorded</h2>
+    <p>Verification within 24hrs.<br>You’ll get notified.</p>
+    <p><a href="status.html" style="color:var(--gold); font-weight:bold;">Go to My Status</a></p>
+  </div>
+
+  <script src="firebase.js"></script>
+  <script>
+    const data = JSON.parse(sessionStorage.getItem('regData') || '{}');
+    if(!data.name) location.href='index.html';
+    document.getElementById('amount').textContent = '₦' + data.amount.toLocaleString();
+    document.getElementById('paidBtn').onclick = () => {
+      document.getElementById('paymentCard').style.display = 'none';
+      document.getElementById('pending').style.display = 'block';
+    };
+  </script>
+</body>
+</html>
