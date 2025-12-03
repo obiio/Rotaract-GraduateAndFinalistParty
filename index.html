@@ -50,7 +50,7 @@
     <div class="modal-content">
       <h2 style="text-align:center; margin-bottom:1.5rem; color:var(--gold);">Complete Registration</h2>
       <form id="regForm">
-        <select id="category" required><option value="">Select Category</option><option value="graduate">Graduate - ₦8,000</option><option value="finalist">Finalist - ₦5,000</option></select>
+        <select id="category" required><option value="">Select Category</option><option value="graduate">Graduate - ₦12,000</option><option value="finalist">Finalist - ₦10,000</option></select>
         <input type="text" placeholder="Full Name" id="name" required/>
         <input type="text" placeholder="Club Name (Compulsory)" id="club" required/>
         <input type="tel" placeholder="Phone Number (WhatsApp)" id="phone" required/>
@@ -124,7 +124,7 @@
       phone: e.target.phone.value,
       email: e.target.email.value,
       category: e.target.category.value,
-      amount: e.target.category.value === 'graduate' ? 8000 : 5000,
+      amount: e.target.category.value === 'graduate' ? 12000 : 10000,
       status: 'pending',
       regNumber: regNumber,  // ← NEW FORMAT
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -137,4 +137,5 @@
   });
 </script>
 </body>
+
 </html>
